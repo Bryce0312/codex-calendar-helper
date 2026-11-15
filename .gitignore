@@ -1,0 +1,9 @@
+.dailyhelper/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+/每日记录.md
+/每日记录状态.json
+/记录规则.md
+/日程程序.md

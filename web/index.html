@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>我的日程本</title>
+  <link rel="stylesheet" href="/style.css">
+  <script defer src="/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="我的日程本首页"><span class="brand-mark" aria-hidden="true"></span><span>我的日程本</span></a>
+    <div class="top-actions">
+      <label class="search"><span class="search-icon" aria-hidden="true"></span><input id="search" type="search" placeholder="搜索日程" aria-label="搜索日程"></label>
+      <button class="button" id="voice-add" type="button"><span class="mic" aria-hidden="true"></span><span>语音录入</span></button>
+      <button class="button primary" id="manual-add" type="button"><span class="plus" aria-hidden="true">+</span><span>新建日程</span></button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <aside class="sidebar" aria-label="日程筛选">
+      <section class="mini" aria-label="日期导航">
+        <div class="mini-header"><strong id="mini-month"></strong><div class="arrows"><button class="icon-button" id="mini-prev" type="button" aria-label="上个月">‹</button><button class="icon-button" id="mini-next" type="button" aria-label="下个月">›</button></div></div>
+        <div class="mini-grid" id="mini-grid"></div>
+      </section>
+
+      <section class="filters" aria-labelledby="filter-title">
+        <h2 id="filter-title">日程分类</h2>
+        <label class="filter assignment"><input type="checkbox" data-category="assignment" checked><span class="category-dot" aria-hidden="true"></span><span>作业任务</span><span class="filter-count" id="count-assignment"></span></label>
+        <label class="filter activity"><input type="checkbox" data-category="activity" checked><span class="category-dot" aria-hidden="true"></span><span>活动</span><span class="filter-count" id="count-activity"></span></label>
+        <label class="filter life"><input type="checkbox" data-category="life" checked><span class="category-dot" aria-hidden="true"></span><span>生活</span><span class="filter-count" id="count-life"></span></label>
+        <label class="filter invitation-filter"><input id="show-invitations" type="checkbox" checked><span>显示活动邀请</span></label>
+      </section>
+
+      <section class="source" aria-labelledby="source-title">
+        <div class="source-heading"><span class="mail-icon" aria-hidden="true"></span><h2 id="source-title">邮件日记</h2></div>
+        <p id="mail-status">正在读取邮件日记…</p>
+        <p id="mail-warning" class="mail-warning" hidden></p>
+        <button class="text-button" type="button" id="refresh">刷新日程</button>
+      </section>
+    </aside>
+
+    <main class="main">
+      <div class="schedule-header">
+        <div><div class="period-label" id="period-label"></div><h1 id="period-heading">我的课表</h1></div>
+        <div class="views" role="group" aria-label="日程视图">
+          <button type="button" data-view="day" aria-pressed="false">日视图</button>
+          <button type="button" data-view="week" aria-pressed="true">周课表</button>
+          <button type="button" data-view="month" aria-pressed="false">整月</button>
+          <button type="button" data-view="list" aria-pressed="false">列表</button>
+        </div>
+      </div>
+      <div class="calendar-toolbar">
+        <div class="period-nav"><button class="button small" id="return-home" type="button" aria-label="返回主界面" hidden>‹ 主界面</button><button class="button small" id="today" type="button">今天</button><div class="arrows calendar-arrows"><button class="icon-button" id="previous" type="button" aria-label="上一周">‹</button><button class="icon-button" id="next" type="button" aria-label="下一周">›</button></div></div>
+        <span class="timezone" id="timezone">北京时间</span>
+      </div>
+      <section id="calendar" class="calendar" aria-label="日程" aria-busy="true"></section>
+      <p id="status" class="sr-only" role="status" aria-live="polite"></p>
+    </main>
+  </div>
+
+  <dialog id="create-dialog" aria-labelledby="create-title">
+    <form id="create-form" class="modal-content">
+      <div class="modal-heading"><h2 id="create-title">新建日程</h2><button class="icon-button close-button" type="button" data-close="create-dialog" aria-label="关闭">×</button></div>
+      <section id="voice-panel" class="voice-panel" hidden>
+        <div class="voice-field"><label for="transcript">说出或输入日程</label><button class="button small" id="record" type="button"><span class="mic" aria-hidden="true"></span><span id="record-label">开始录音</span></button></div>
+        <textarea id="transcript" rows="3" placeholder="例如，明天下午三点在 FJ303 参加设计讲座"></textarea>
+        <div class="voice-footer"><p id="voice-status" role="status"></p><button class="button small" id="interpret" type="button">识别日程</button></div>
+        <ul id="parse-warnings" class="warnings" hidden></ul>
+      </section>
+      <label class="field">标题<input id="event-title" maxlength="200" required placeholder="日程名称"></label>
+      <div class="field-row">
+        <label class="field">分类<select id="event-category"><option value="assignment">作业任务</option><option value="activity">活动</option><option value="life">生活</option></select></label>
+        <label class="field">显示方式<select id="event-kind"><option value="event">日程</option><option value="deadline">截止事项</option><option value="notice">通知</option></select></label>
+      </div>
+      <label class="all-day"><input id="event-all-day" type="checkbox">全天</label>
+      <div class="field-row"><label class="field"><span id="event-start-label">开始</span><input id="event-start" type="datetime-local" required></label><label class="field" id="event-end-field">结束<input id="event-end" type="datetime-local"></label></div>
+      <label class="field">地点<input id="event-location" maxlength="200" placeholder="选填"></label>
+      <label class="field">备注<textarea id="event-notes" rows="2" maxlength="5000" placeholder="选填"></textarea></label>
+      <p class="form-error" id="create-error" role="alert" hidden></p>
+      <div class="modal-actions"><button class="button" type="button" data-close="create-dialog">取消</button><button class="button primary" type="submit" id="save-event">保存日程</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="day-dialog" aria-labelledby="day-dialog-title" aria-describedby="day-dialog-date">
+    <div class="modal-content">
+      <div class="modal-heading">
+        <div><p class="day-dialog-date" id="day-dialog-date"></p><h2 id="day-dialog-title">当日事项</h2></div>
+        <button class="icon-button close-button" type="button" data-close="day-dialog" aria-label="关闭" autofocus>×</button>
+      </div>
+      <div class="agenda-items" id="day-dialog-items"></div>
+    </div>
+  </dialog>
+
+  <dialog id="detail-dialog" aria-labelledby="detail-title">
+    <article class="modal-content">
+      <div class="modal-heading"><span id="detail-category" class="detail-category"></span><button class="icon-button close-button" type="button" data-close="detail-dialog" aria-label="关闭">×</button></div>
+      <h2 id="detail-title"></h2>
+      <dl id="detail-fields" class="detail-fields"></dl>
+      <p id="detail-notes" class="detail-notes" hidden></p>
+      <p id="detail-error" class="form-error" role="alert" hidden></p>
+      <div class="modal-actions detail-actions"><button class="button danger" id="delete-event" type="button" hidden>删除</button><button class="button" id="edit-event" type="button" hidden>编辑</button><a id="detail-source" class="button" target="_blank" rel="noopener noreferrer" hidden>查看来源</a><a id="detail-mail-source" class="button" target="_blank" rel="noopener noreferrer" hidden>打开 Gmail 原邮件</a><button class="button primary" type="button" data-close="detail-dialog">返回日程</button></div>
+    </article>
+  </dialog>
+</body>
+</html>
